@@ -1,6 +1,8 @@
 #! /usr/bin/env bash
 
-export PS1='\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\e[32;1m\]\u\[\033[00m\]@\[\e[31;1m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+_BLUE='\[\033[01;34m\]'
+_USUAL='\[\033[00m\]'
+export PS1="$_BLUE\w$_USUAL\$ "
 
 export TMPDIR="$HOME/tmp"
 
