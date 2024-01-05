@@ -34,6 +34,6 @@ def install():
         print("Install profile...")
         scripts_dir = get_scripts_dir()
         profile_path = os.path.join(scripts_dir, "profile.sh")
-        add_to_the_end("~/.profile", f"SCRIPTS_DIR=\"{scripts_dir}\"\nsource {profile_path}")
+        add_to_the_end("~/.profile", f"export SCRIPTS_DIR=\"{scripts_dir}\"\nsource {profile_path}")
 
 install()
