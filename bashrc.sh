@@ -2,6 +2,8 @@
 
 export PS1='\[\e]0;\u@\h: \w\a\]${debian_chroot:+($debian_chroot)}\[\e[32;1m\]\u\[\033[00m\]@\[\e[31;1m\]\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 
+export TMPDIR="$HOME/tmp"
+
 ulimit -c unlimited
 
 alias ll='ls -alF --color=auto'
