@@ -78,6 +78,9 @@ def print_ydb_help(args):
     if args.output_path:
         print("Create ydb cli profile with generated file:")
         print("ydb config profile create <new-profile-name> --iam-endpoint {} --oauth2-key-file {}".format(args.token_endpoint, args.output_path))
+        print("")
+        print("Test created profile:")
+        print("ydb --endpoint fake -d /fake --profile <new-profile-name> auth get-token -f")
 
 def main():
     args = parse_args()
