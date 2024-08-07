@@ -45,15 +45,16 @@ def parse_args():
         print("Please specify correct IAM installation type. prod or test")
         exit(1)
 
+    if args.iam_installation == "prod":
+        args.token_endpoint = "https://auth.eu-north1.nebius.ai:443/oauth2/token/exchange"
+    elif args.iam_installation == "test":
+        args.token_endpoint = "https://auth.new.nebiuscloud.net:443/oauth2/token/exchange"
+
     return args
 
 def get_config(args):
     cfg = {}
-    if args.iam_installation == "prod":
-        cfg["token-endpoint"] = "https://auth.eu-north1.nebius.ai:443/oauth2/token/exchange"
-    elif args.iam_installation == "test":
-        cfg["token-endpoint"] = "https://auth.new.nebiuscloud.net:443/oauth2/token/exchange"
-
+    cfg["token-endpoint"] = args.token_endpoint
     jwt_cfg = {}
     jwt_cfg["type"] = "JWT"
     jwt_cfg["alg"] = "RS256"
@@ -73,9 +74,14 @@ def save_to_file(args, cfg):
     else:
         print(json.dumps(cfg, indent=4))
 
+def print_ydb_help(args):
+    if args.output_path:
+        print("Create ydb cli profile with generated file:")
+        print("ydb config profile create <new-profile-name> --iam-endpoint {} --oauth2-key-file {}".format(args.token_endpoint, args.output_path))
+
 def main():
     args = parse_args()
-
     save_to_file(args, get_config(args))
+    print_ydb_help(args)
 
 main()
