@@ -36,7 +36,12 @@ alias ta='tmux attach -t'
 
 # Fix SSH auth socket location so agent forwarding works with tmux
 if test "$SSH_AUTH_SOCK" ; then
-    ln -sf $SSH_AUTH_SOCK ~/.ssh/ssh_auth_sock
+    if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/ssh_auth_sock" ] ; then
+        echo "Linking SSH_AUTH_SOCK ($SSH_AUTH_SOCK) as ~/.ssh/ssh_auth_sock"
+        ln -sf $SSH_AUTH_SOCK $HOME/.ssh/ssh_auth_sock
+        export PREV_SSH_AUTH_SOCK=$SSH_AUTH_SOCK
+        export SSH_AUTH_SOCK=$HOME/.ssh/ssh_auth_sock
+    fi
+else
+    echo "SSH_AUTH_SOCK variable is empty"
 fi
-
-SSH_AUTH_SOCK=~/.ssh/ssh_auth_sock
