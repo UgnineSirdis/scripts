@@ -1,0 +1,4 @@
+profiles:
+  local_ydb:
+    endpoint: grpc://localhost:17690
+    database: /local
