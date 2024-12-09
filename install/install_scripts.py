@@ -4,7 +4,7 @@ import os
 import shutil
 
 def get_scripts_dir() -> str:
-    return os.path.dirname(os.path.abspath(__file__))
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def file_has_scripts_dir(p: str) -> bool:
@@ -53,5 +53,6 @@ def install():
     install_config_to_home_dir(".tmux.conf")
     install_config_to_home_dir(".gitconfig")
     install_server_name()
+
 
 install()
