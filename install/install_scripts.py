@@ -26,8 +26,11 @@ def add_to_the_end(p: str, s: str):
 
 
 def install_config_to_home_dir(cfg_name):
-    print(f"Copy {cfg_name}")
-    shutil.copyfile(os.path.join(get_scripts_dir(), cfg_name), os.path.expanduser(f"~/{cfg_name}"))
+    print(f"Symlink {cfg_name}")
+    cfg_path = os.path.expanduser(f"~/{cfg_name}")
+    if os.path.exists(cfg_path):
+        os.remove(cfg_path)
+    os.symlink(os.path.join(get_scripts_dir(), cfg_name), cfg_path)
 
 
 def install_server_name():
