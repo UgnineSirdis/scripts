@@ -39,9 +39,13 @@ alias ya='$($SCRIPTS_DIR/repository_root.py)/ya'
 
 # build
 alias yab='$($SCRIPTS_DIR/repository_root.py)/ya make --build relwithdebinfo'
+# debug build with exact debug flags in vscode
+alias yabd='$($SCRIPTS_DIR/repository_root.py)/ya make -d -DBUILD_LANGUAGES=CPP -DCONSISTENT_DEBUG=yes -j80 -DOPENSOURCE=yes -DUSE_PREBUILT_TOOLS=no -DAPPLE_SDK_LOCAL=yes -DUSE_CLANG_CL=yes -DUSE_AIO=static -DUSE_ICONV=static -DUSE_IDN=static -DCFLAGS=-fno-omit-frame-pointer'
 
 # build and test
 alias yat='$($SCRIPTS_DIR/repository_root.py)/ya make -t -A --build relwithdebinfo'
+# debug build and test with exact debug flags in vscode
+alias yatd='$($SCRIPTS_DIR/repository_root.py)/ya make -d -DBUILD_LANGUAGES=CPP -DCONSISTENT_DEBUG=yes -j80 -DOPENSOURCE=yes -DUSE_PREBUILT_TOOLS=no -DAPPLE_SDK_LOCAL=yes -DUSE_CLANG_CL=yes -DUSE_AIO=static -DUSE_ICONV=static -DUSE_IDN=static -DCFLAGS=-fno-omit-frame-pointer -t -A'
 
 # tmux
 alias ta='tmux attach -t'
