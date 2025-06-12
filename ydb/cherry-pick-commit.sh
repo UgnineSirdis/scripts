@@ -10,5 +10,5 @@ MERGE_BRANCH=$BRANCH-merge-$COMMIT
 git switch $BRANCH
 git pull
 git checkout -b $MERGE_BRANCH $BRANCH
-git cherry-pick -x $COMMIT
+git cherry-pick -X ignore-space-at-eol -x $COMMIT
 git push --set-upstream origin $MERGE_BRANCH

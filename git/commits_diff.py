@@ -152,7 +152,7 @@ def main():
             msg += f" main branch commit: https://github.com/ydb-platform/ydb/commit/{main_commit.commit_hash}"
         print(msg)
 
-    cherry_pick_command = "git cherry-pick -x"
+    cherry_pick_command = "git cherry-pick -X ignore-space-at-eol -x"
     for commit in commits_to_merge:
         cherry_pick_command += f" {commit.commit_hash}"
     print(f"\nCherry-pick command:\n{cherry_pick_command}")
