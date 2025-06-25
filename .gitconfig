@@ -8,4 +8,4 @@
 	ci = commit
 	br = branch
 	co = checkout
-	cherry = "!f() { set -x ; git cherry-pick -X ignore-space-at-eol -x $@; }; f"
+	backport = "!f() { set -x ; git cherry-pick -X ignore-space-at-eol -x $@; }; f"
