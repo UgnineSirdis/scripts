@@ -12,3 +12,5 @@ git pull
 git checkout -b $MERGE_BRANCH $BRANCH
 git cherry-pick -X ignore-space-at-eol -x $COMMIT
 git push --set-upstream origin $MERGE_BRANCH
+
+echo "Make PR: https://github.com/ydb-platform/ydb/compare/$BRANCH...UgnineSirdis:ydb:$MERGE_BRANCH?expand=1"
