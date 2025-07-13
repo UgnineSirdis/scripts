@@ -51,6 +51,11 @@ alias yatd='$($SCRIPTS_DIR/repository_root.py)/ya make -d -DBUILD_LANGUAGES=CPP 
 alias ta='tmux attach -t'
 alias tls='tmux ls'
 
+# local_ydb
+alias build_restart_local_ydb='~/ydb/ya make --build relwithdebinfo ~/ydb/ydb/apps/ydbd ~/ydb/ydb/public/tools/local_ydb ~/ydb/ydb/apps/ydb && pgrep -u $USER ydbd | xargs --no-run-if-empty kill && MON_PORT=28040 GRPC_PORT=17690 GRPC_TLS_PORT=17691 IC_PORT=17692 GRPC_EXT_PORT=17693 PUBLIC_HTTP_PORT=28041 ~/ydb/ydb/public/tools/local_ydb/local_ydb start --ydb-binary-path ~/ydb/ydb/apps/ydbd/ydbd --fixed-ports --ydb-working-dir'
+alias restart_local_ydb='pgrep -u $USER ydbd | xargs --no-run-if-empty kill && MON_PORT=28040 GRPC_PORT=17690 GRPC_TLS_PORT=17691 IC_PORT=17692 GRPC_EXT_PORT=17693 PUBLIC_HTTP_PORT=28041 ~/ydb/ydb/public/tools/local_ydb/local_ydb start --ydb-binary-path ~/ydb/ydb/apps/ydbd/ydbd --fixed-ports --ydb-working-dir'
+alias deploy_local_ydb='pgrep -u $USER ydbd | xargs --no-run-if-empty kill && MON_PORT=28040 GRPC_PORT=17690 GRPC_TLS_PORT=17691 IC_PORT=17692 GRPC_EXT_PORT=17693 PUBLIC_HTTP_PORT=28041 ~/ydb/ydb/public/tools/local_ydb/local_ydb deploy --ydb-binary-path ~/ydb/ydb/apps/ydbd/ydbd --fixed-ports --ydb-working-dir'
+
 # Fix SSH auth socket location so agent forwarding works with tmux
 if test "$SSH_AUTH_SOCK" ; then
     if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/ssh_auth_sock" ] ; then
