@@ -28,10 +28,10 @@ mv ydb/apps/ydbd/ydbd ydb/apps/ydbd/ydbd_link
 ln ${YDBD_BINARY_BUILD_PATH} ydb/apps/ydbd/ydbd
 
 # build base image
-docker build -f ~/dev-build.Dockerfile -t ${IMAGE_URL} .
+docker build -f ~/docker_builds/dev-build.Dockerfile -t ${IMAGE_URL} .
 
 # build breakpad image
-docker build --build-arg BASE_IMAGE=${IMAGE_URL} -f ~/ydb-server-breakpad.dockerfile -t ${IMAGE_URL}-breakpad .
+docker build --build-arg BASE_IMAGE=${IMAGE_URL} -f ~/docker_builds/ydb-server-breakpad.dockerfile -t ${IMAGE_URL}-breakpad .
 
 # push resulting image
 docker push ${IMAGE_URL}-breakpad
