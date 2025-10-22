@@ -9,3 +9,4 @@
 	br = branch
 	co = checkout
 	backport = "!f() { set -x ; git cherry-pick -X ignore-space-at-eol -x $@; }; f"
+	lg = log --graph
