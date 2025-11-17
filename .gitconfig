@@ -1,8 +1,16 @@
 [user]
 	email = UgnineSirdis@ydb.tech
 	name = Vasily Gerasimov
+
+[includeIf "gitdir:~/manifests/"]
+    path = ~/scripts/.gitconfig_nebo
+
+[includeIf "gitdir:~/nebo/"]
+    path = ~/scripts/.gitconfig_nebo
+
 [core]
 	editor = vim
+
 [alias]
 	st = status
 	ci = commit

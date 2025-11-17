@@ -1,0 +1,9 @@
+[user]
+	email = galaxycrab@nebius.com
+	name = Vasilii Gerasimov
+
+[url "git@gitlab.nebius.dev:"]
+	insteadOf = https://gitlab.nebius.dev/
+
+[protocol]
+	version = 2
