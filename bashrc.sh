@@ -51,7 +51,8 @@ alias yatd='$($SCRIPTS_DIR/repository_root.py)/ya make -d -DBUILD_LANGUAGES=CPP 
 alias bt='$($SCRIPTS_DIR/repository_root.py)/bazel test --test_summary=detailed  --test_output=all --cache_test_results=no'
 
 # tmux
-alias ta='tmux attach -t'
+alias ta='tmux -CC attach -t'
+alias tn='tmux -CC new'
 alias tls='tmux ls'
 
 # local_ydb
