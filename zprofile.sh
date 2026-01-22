@@ -1,3 +1,5 @@
+PATH="$SCRIPTS_DIR:$HOME/.local/bin:$PATH"
+
 alias jump-test="tsh kube login --proxy=bastion.man.nebiusinfra.net:443 man-common-testing && kubectl exec -it ydb-jump-host-0 -n ydb-global -- env YDB_TOKEN=\$(npc --profile testing iam get-access-token) bash"
 alias jump-dev="tsh kube login --proxy=bastion.man.nebiusinfra.net:443 man-ydb-dev && kubectl exec -it ydb-jump-host-0 -n ydb-dev -- env YDB_TOKEN=\$(npc --profile testing iam get-access-token) bash"
 alias jump-slice="tsh kube login --proxy=bastion.man.nebiusinfra.net:443 man-ydb-dev && kubectl exec -it ydb-jump-host-0 -n ydb-dev -- env YDB_TOKEN=\$(npc --profile testing iam get-access-token) bash"
