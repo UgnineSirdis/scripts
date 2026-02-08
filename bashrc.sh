@@ -48,6 +48,7 @@ alias yat='$($SCRIPTS_DIR/repository_root.py)/ya make -t -A --build relwithdebin
 alias yatd='$($SCRIPTS_DIR/repository_root.py)/ya make -d -DBUILD_LANGUAGES=CPP -DCONSISTENT_DEBUG=yes -DOPENSOURCE=yes -DUSE_PREBUILT_TOOLS=no -DAPPLE_SDK_LOCAL=yes -DUSE_CLANG_CL=yes -DUSE_AIO=static -DUSE_ICONV=static -DUSE_IDN=static -DCFLAGS=-fno-omit-frame-pointer -t -A'
 
 # bazel test
+alias bazel='$($SCRIPTS_DIR/repository_root.py)/bazel'
 alias bt='$($SCRIPTS_DIR/repository_root.py)/bazel test --test_summary=detailed  --test_output=all --cache_test_results=no'
 
 # tmux
