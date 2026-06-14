@@ -9,7 +9,7 @@ fi
 
 SLICE_KUBECTL_CONTEXT=bastion-man-man-ydb-dev
 JUMP_HOST_NAMESPACE=ydb-dev
-CLUSTER_GRPC_ENDPOINT=grpcs://dev-storage-grpc.ydb-dev.svc.cluster.local:2135
+CLUSTER_GRPC_ENDPOINT=grpcs://storage-grpc.ydb-dev.svc.cluster.local:2135
 CLUSTER_DATABASE=/dev
 NPC_PROFILE=newbius
 
