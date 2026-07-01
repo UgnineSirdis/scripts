@@ -9,36 +9,38 @@ if [ -z "$IMAGE_NAME" ]; then
 fi
 
 IMAGE_URL=artifactory.nebius.dev/common-cr/ydb/ydb:${IMAGE_NAME}
+YDB_REPO_PATH=~/ydb
 
-cd ~/ydb
+BUILD_DIR=~/ydb-docker-build
 
-rm -f ydb/apps/ydbd/ydbd
-rm -f ydb/apps/ydbd/ydbd_link
+rm -rf ${BUILD_DIR}
+mkdir -p ${BUILD_DIR}
+
+cd ${YDB_REPO_PATH}
 
 ./ya make --build relwithdebinfo ydb/apps/ydbd
+echo "ydbd is built"
 
 # rename link to real file,
 # because docker does not understand symliks
 YDBD_BINARY_BUILD_PATH=$(readlink ydb/apps/ydbd/ydbd)
 
-# rename existing link
-mv ydb/apps/ydbd/ydbd ydb/apps/ydbd/ydbd_link
+mkdir -p ${BUILD_DIR}/ydb/apps/ydbd
+ln ${YDBD_BINARY_BUILD_PATH} ${BUILD_DIR}/ydb/apps/ydbd/
 
-# make hard link to real binary to ydb/apps/ydbd
-ln ${YDBD_BINARY_BUILD_PATH} ydb/apps/ydbd/ydbd
+cd ${BUILD_DIR}
 
-# build base image
-docker build -f ~/docker_builds/dev-build.Dockerfile -t ${IMAGE_URL} .
+echo "Build base image"
+docker build -f ~/manifests/docker/ydbd/dev-build.Dockerfile -t ${IMAGE_URL} .
 
-# build breakpad image
-docker build --build-arg BASE_IMAGE=${IMAGE_URL} -f ~/docker_builds/ydb-server-breakpad.dockerfile -t ${IMAGE_URL}-breakpad .
+echo "Build breakpad image"
+docker build --build-arg BASE_IMAGE=${IMAGE_URL} -f ~/manifests/docker/ydbd/ydb-server-breakpad.dockerfile -t ${IMAGE_URL}-breakpad .
 
+echo "Push resulting image"
 # push resulting image
 docker push ${IMAGE_URL}-breakpad
 
 echo "Full image url with breakpad:"
 echo ${IMAGE_URL}-breakpad
 
-# revert links
-rm ydb/apps/ydbd/ydbd
-mv ydb/apps/ydbd/ydbd_link ydb/apps/ydbd/ydbd
+rm -r ${BUILD_DIR}
