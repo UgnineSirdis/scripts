@@ -6,6 +6,7 @@ export TMPDIR="$HOME/tmp"
 # Claude proxy
 export ANTHROPIC_BASE_URL=https://nai-gw.nebius.ts.net/anthropic
 export ANTHROPIC_API_KEY=sk-ant-api03-gateway-placeholder
+export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
 
 cd ~/ydb
 
