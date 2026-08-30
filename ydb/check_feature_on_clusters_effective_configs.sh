@@ -13,11 +13,23 @@ YDB_TOKEN_PROD=$(npc --profile prod iam get-access-token)
 YDB_TOKEN_TEST=$(npc --profile testing iam get-access-token)
 
 CLUSTERS_URL='https://ydb.nebius.dev/api/meta/meta/clusters'
+MAX_INFLIGHT=10
+CURL_RETRIES=2
+CURL_CONNECT_TIMEOUT=5
+CURL_MAX_TIME=30
 
 get_clusters() {
     local response
 
-    response=$(curl --fail --silent --show-error "$CLUSTERS_URL")
+    response=$(
+        curl --fail --silent --show-error \
+            --connect-timeout "$CURL_CONNECT_TIMEOUT" \
+            --max-time "$CURL_MAX_TIME" \
+            --retry "$CURL_RETRIES" \
+            --retry-delay 1 \
+            --retry-all-errors \
+            "$CLUSTERS_URL"
+    )
 
     if ! jq -e '
         .clusters
@@ -81,10 +93,16 @@ print_result() {
     fi
 }
 
-cluster_records=$(get_clusters)
+check_cluster() {
+    local cluster_balancer=$1
+    local cluster_status=$2
+    local cluster_token
+    local cluster_url
+    local settings_url
+    local settings_page
+    local effective_config
+    local feature_value
 
-printf '%-40s %-60s %s\n' 'CLUSTER NAME' 'CLUSTER TITLE' 'FEATURE VALUE'
-while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_status; do
     if [[ "$cluster_status" == 'production' ]]; then
         cluster_token=$YDB_TOKEN_PROD
     else
@@ -96,16 +114,21 @@ while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_stat
 
     if ! settings_page=$(
         curl --fail --silent \
+            --connect-timeout "$CURL_CONNECT_TIMEOUT" \
+            --max-time "$CURL_MAX_TIME" \
+            --retry "$CURL_RETRIES" \
+            --retry-delay 1 \
+            --retry-all-errors \
             -H "Authorization: Bearer $cluster_token" \
             "$settings_url"
     ); then
-        print_result "$cluster_name" "$cluster_title" 'ERROR'
-        continue
+        printf 'ERROR\n'
+        return
     fi
 
     if ! effective_config=$(get_effective_config <<<"$settings_page"); then
-        print_result "$cluster_name" "$cluster_title" 'ERROR'
-        continue
+        printf 'ERROR\n'
+        return
     fi
 
     feature_value=$(grep -F -m 1 -- "$feature_name" <<<"$effective_config" || true)
@@ -115,5 +138,41 @@ while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_stat
         feature_value=$(sed 's/^[[:space:]]*//; s/[[:space:]]*$//' <<<"$feature_value")
     fi
 
+    printf '%s\n' "$feature_value"
+}
+
+cluster_records=$(get_clusters)
+results_dir=$(mktemp -d /tmp/check-feature.XXXXXX)
+
+cleanup() {
+    if [[ -n "${results_dir:-}" && "$results_dir" == /tmp/check-feature.* ]]; then
+        rm -rf -- "$results_dir"
+    fi
+}
+trap cleanup EXIT
+
+result_index=0
+while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_status; do
+    while [[ $(jobs -pr | wc -l | tr -d ' ') -ge $MAX_INFLIGHT ]]; do
+        sleep 0.1
+    done
+
+    check_cluster "$cluster_balancer" "$cluster_status" \
+        >"$results_dir/$result_index" &
+    result_index=$((result_index + 1))
+done <<<"$cluster_records"
+
+wait
+
+printf '%-40s %-60s %s\n' 'CLUSTER NAME' 'CLUSTER TITLE' 'FEATURE VALUE'
+result_index=0
+while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_status; do
+    if [[ -s "$results_dir/$result_index" ]]; then
+        feature_value=$(<"$results_dir/$result_index")
+    else
+        feature_value='ERROR'
+    fi
+
     print_result "$cluster_name" "$cluster_title" "$feature_value"
+    result_index=$((result_index + 1))
 done <<<"$cluster_records"
