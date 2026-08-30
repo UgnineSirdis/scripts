@@ -165,14 +165,26 @@ done <<<"$cluster_records"
 wait
 
 printf '%-40s %-60s %s\n' 'CLUSTER NAME' 'CLUSTER TITLE' 'FEATURE VALUE'
-result_index=0
-while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_status; do
-    if [[ -s "$results_dir/$result_index" ]]; then
-        feature_value=$(<"$results_dir/$result_index")
-    else
-        feature_value='ERROR'
-    fi
-
+while IFS=$'\t' read -r sort_group cluster_name cluster_title feature_value; do
     print_result "$cluster_name" "$cluster_title" "$feature_value"
-    result_index=$((result_index + 1))
-done <<<"$cluster_records"
+done < <(
+    result_index=0
+    while IFS=$'\t' read -r cluster_name cluster_title cluster_balancer cluster_status; do
+        if [[ -s "$results_dir/$result_index" ]]; then
+            feature_value=$(<"$results_dir/$result_index")
+        else
+            feature_value='ERROR'
+        fi
+
+        if [[ "$cluster_status" == 'production' ]]; then
+            sort_group=1
+        else
+            sort_group=0
+        fi
+
+        printf '%s\t%s\t%s\t%s\n' \
+            "$sort_group" "$cluster_name" "$cluster_title" "$feature_value"
+        result_index=$((result_index + 1))
+    done <<<"$cluster_records" \
+        | LC_ALL=C sort -t $'\t' -k1,1n -k2,2
+)
