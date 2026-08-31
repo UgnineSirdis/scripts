@@ -44,7 +44,12 @@ get_clusters() {
         return 1
     fi
 
-    jq -r '.clusters[] | [.name, .title, .balancer, .status] | @tsv' <<<"$response"
+    jq -r '
+        .clusters[]
+        | select(.status != "development" and .status != "dev")
+        | [.name, .title, .balancer, .status]
+        | @tsv
+    ' <<<"$response"
 }
 
 get_effective_config() {
