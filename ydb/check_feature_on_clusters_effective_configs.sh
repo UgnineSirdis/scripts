@@ -4,6 +4,13 @@ set -euo pipefail
 if [[ $# -ne 1 || -z "$1" ]]; then
     echo "Usage: $0 FEATURE_NAME" >&2
     echo "Example: $0 EnableNodeBrokerDeltaProtocol" >&2
+    echo >&2
+    echo "Description:" >&2
+    echo "  Gets the cluster list from https://ydb.nebius.dev/api/meta/meta/clusters." >&2
+    echo "  Checks the effective configuration of each cluster for FEATURE_NAME." >&2
+    echo >&2
+    echo "Warning: FEATURE_NAME must use protobuf naming style." >&2
+    echo "Option names: https://github.com/ydb-platform/ydb/blob/main/ydb/core/protos/config.proto" >&2
     exit 2
 fi
 
