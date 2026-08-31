@@ -143,7 +143,7 @@ check_cluster() {
         return
     fi
 
-    feature_value=$(grep -F -m 1 -- "$feature_name" <<<"$effective_config" || true)
+    feature_value=$(grep -F -w -m 1 -- "$feature_name" <<<"$effective_config" || true)
     if [[ -z "$feature_value" ]]; then
         feature_value='NOT SET'
     else
