@@ -8,6 +8,9 @@
 [includeIf "gitdir:~/nebo/"]
     path = ~/scripts/.gitconfig_nebo
 
+[includeIf "gitdir:~/load-actor-plugin/"]
+    path = ~/scripts/.gitconfig_nebo
+
 [core]
 	editor = vim
 
@@ -18,3 +21,9 @@
 	co = checkout
 	backport = "!f() { set -x ; git cherry-pick -X ignore-space-at-eol -x $@; }; f"
 	lg = log --graph
+[credential "https://gitlab.nebius.dev"]
+	helper =
+	helper = !/home/galaxycrab/.cache/bazel/_bazel_galaxycrab/cache/repos/v1/contents/f2c08d0c3ac65d136bb4780712a2a4c985c74007114177cc1a2849c895574420/cf396fb7-c6c9-4d58-89f8-205d155b7954/bin/glab auth git-credential
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential
