@@ -67,35 +67,51 @@ def main():
     test_commit_parsing()
 
     upstream_stable_branches = [
-        "remotes/upstream/stable-24-3",
-        "remotes/upstream/stable-24-3-10-analytics",
-        "remotes/upstream/stable-24-3-10-hotfix",
-        "remotes/upstream/stable-24-3-11-hotfix",
-        "remotes/upstream/stable-24-3-13-enterprise",
-        "remotes/upstream/stable-24-3-13-hotfix",
-        "remotes/upstream/stable-24-3-13-hotfix-yasubd",
-        "remotes/upstream/stable-24-3-14-cs",
-        "remotes/upstream/stable-24-3-15-hotfix",
-        "remotes/upstream/stable-24-3-6-logbroker",
-        "remotes/upstream/stable-24-3-7-hotfix",
-        "remotes/upstream/stable-24-3-8-analytics",
-        "remotes/upstream/stable-24-3-8-analytics-misha",
-        "remotes/upstream/stable-24-3-9-cs",
-        "remotes/upstream/stable-24-3-9-hotfix",
-        "remotes/upstream/stable-24-3-enterprise",
-        "remotes/upstream/stable-24-4",
-        "remotes/upstream/stable-24-4-1-hotfix",
-        "remotes/upstream/stable-24-4-2-hotfix",
-        "remotes/upstream/stable-24-4-2-hotfix-backport/1",
-        "remotes/upstream/stable-24-4-3-hotfix",
-        "remotes/upstream/stable-24-4-4-hotfix",
-        "remotes/upstream/stable-24-4-analytics",
-        "remotes/upstream/stable-24-4-compatibility-patch",
-        "remotes/upstream/stable-24-4-enterprise",
-        "remotes/upstream/stable-24-4-version-definition",
+        # "remotes/upstream/stable-24-3",
+        # "remotes/upstream/stable-24-3-10-analytics",
+        # "remotes/upstream/stable-24-3-10-hotfix",
+        # "remotes/upstream/stable-24-3-11-hotfix",
+        # "remotes/upstream/stable-24-3-13-enterprise",
+        # "remotes/upstream/stable-24-3-13-hotfix",
+        # "remotes/upstream/stable-24-3-13-hotfix-yasubd",
+        # "remotes/upstream/stable-24-3-14-cs",
+        # "remotes/upstream/stable-24-3-15-hotfix",
+        # "remotes/upstream/stable-24-3-6-logbroker",
+        # "remotes/upstream/stable-24-3-7-hotfix",
+        # "remotes/upstream/stable-24-3-8-analytics",
+        # "remotes/upstream/stable-24-3-8-analytics-misha",
+        # "remotes/upstream/stable-24-3-9-cs",
+        # "remotes/upstream/stable-24-3-9-hotfix",
+        # "remotes/upstream/stable-24-3-enterprise",
+        # "remotes/upstream/stable-24-4",
+        # "remotes/upstream/stable-24-4-1-hotfix",
+        # "remotes/upstream/stable-24-4-2-hotfix",
+        # "remotes/upstream/stable-24-4-2-hotfix-backport/1",
+        # "remotes/upstream/stable-24-4-3-hotfix",
+        # "remotes/upstream/stable-24-4-4-hotfix",
+        # "remotes/upstream/stable-24-4-analytics",
+        # "remotes/upstream/stable-24-4-compatibility-patch",
+        # "remotes/upstream/stable-24-4-enterprise",
+        # "remotes/upstream/stable-24-4-version-definition",
+        "remotes/upstream/stable-25-1",
+        "remotes/upstream/stable-25-1-1",
+        "remotes/upstream/stable-25-1-1-13-hotfix",
+        "remotes/upstream/stable-25-1-1-17-hotfix",
+        "remotes/upstream/stable-25-1-1-18-hotfix",
+        "remotes/upstream/stable-25-1-1-19",
+        "remotes/upstream/stable-25-1-1-19-hotfix",
+        "remotes/upstream/stable-25-1-1-9-hotfix",
+        "remotes/upstream/stable-25-1-2",
+        "remotes/upstream/stable-25-1-2-4-hotfix",
+        "remotes/upstream/stable-25-1-2-7-rc",
+        "remotes/upstream/stable-25-1-3",
+        "remotes/upstream/stable-25-1-4",
+        "remotes/upstream/stable-25-1-4-17-hotfix",
+        "remotes/upstream/stable-25-1-4-7-hotfix",
+        "remotes/upstream/stable-25-1-analytics",
     ]
-    nebius_branch = "stream-nb-24-4"
-    upstream_stable_branch = "stable-25-1"
+    nebius_branch = "stream-nb-25-1"
+    upstream_stable_branch = "stable-25-2"
     main_branch = "main"
 
     diverge_commit = helpers.get_diverge_commit(upstream_stable_branch, nebius_branch)
@@ -156,6 +172,7 @@ def main():
     for commit in commits_to_merge:
         cherry_pick_command += f" {commit.commit_hash}"
     print(f"\nCherry-pick command:\n{cherry_pick_command}")
+    print(f"\n\nThere are {len(commits_to_merge)} commits to merge")
 
 if __name__ == "__main__":
     main()
