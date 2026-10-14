@@ -65,10 +65,10 @@ alias deploy_local_ydb='~/ydb/ya make --build relwithdebinfo ~/ydb/ydb/apps/ydbd
 alias clear_vscode_proc='pgrep -f -u $USER .vscode-server | xargs --no-run-if-empty kill && pgrep -f -u $USER .ya/tools | xargs --no-run-if-empty kill'
 
 # Fix SSH auth socket location so agent forwarding works with tmux
-if test "$SSH_AUTH_SOCK" ; then
-    if [ "$SSH_AUTH_SOCK" != "$HOME/.ssh/ssh_auth_sock" ] ; then
+if [ -n "$SSH_AUTH_SOCK" ] ; then
+    if [ ! -S "$HOME/.ssh/ssh_auth_sock" ] && [ -S "$SSH_AUTH_SOCK" ] ; then # if this link does not point to an existing socket, update it with our $SSH_AUTH_SOCK
         echo "Linking SSH_AUTH_SOCK ($SSH_AUTH_SOCK) as ~/.ssh/ssh_auth_sock"
-        ln -sf $SSH_AUTH_SOCK $HOME/.ssh/ssh_auth_sock
+        ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/ssh_auth_sock"
         export PREV_SSH_AUTH_SOCK=$SSH_AUTH_SOCK
         export SSH_AUTH_SOCK=$HOME/.ssh/ssh_auth_sock
     fi
