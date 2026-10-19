@@ -70,8 +70,8 @@ if [ -n "$SSH_AUTH_SOCK" ] ; then
         echo "Linking SSH_AUTH_SOCK ($SSH_AUTH_SOCK) as ~/.ssh/ssh_auth_sock"
         ln -sf "$SSH_AUTH_SOCK" "$HOME/.ssh/ssh_auth_sock"
         export PREV_SSH_AUTH_SOCK=$SSH_AUTH_SOCK
-        export SSH_AUTH_SOCK=$HOME/.ssh/ssh_auth_sock
     fi
 else
     echo "SSH_AUTH_SOCK variable is empty"
 fi
+export SSH_AUTH_SOCK=$HOME/.ssh/ssh_auth_sock
