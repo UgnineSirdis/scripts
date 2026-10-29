@@ -4,6 +4,15 @@
 import helpers
 
 
+main_branch = "main"
+
+# Existing Nebius branch to which we have ported changes
+nebius_branch = "stream-nb-25-2"
+
+# Stable branch/tag from which we want to make a new Nebius branch
+upstream_stable_branch = "25.3.1.27"
+
+
 def print_commits(branch_name, commits):
     print(f"\n\nBranch {branch_name}:")
     for commit in commits:
@@ -66,7 +75,7 @@ def is_one_of_branches_ancestor(commit_hash, branches):
 def main():
     test_commit_parsing()
 
-    upstream_stable_branches = [
+    # upstream_stable_branches = [
         # "remotes/upstream/stable-24-3",
         # "remotes/upstream/stable-24-3-10-analytics",
         # "remotes/upstream/stable-24-3-10-hotfix",
@@ -93,26 +102,25 @@ def main():
         # "remotes/upstream/stable-24-4-compatibility-patch",
         # "remotes/upstream/stable-24-4-enterprise",
         # "remotes/upstream/stable-24-4-version-definition",
-        "remotes/upstream/stable-25-1",
-        "remotes/upstream/stable-25-1-1",
-        "remotes/upstream/stable-25-1-1-13-hotfix",
-        "remotes/upstream/stable-25-1-1-17-hotfix",
-        "remotes/upstream/stable-25-1-1-18-hotfix",
-        "remotes/upstream/stable-25-1-1-19",
-        "remotes/upstream/stable-25-1-1-19-hotfix",
-        "remotes/upstream/stable-25-1-1-9-hotfix",
-        "remotes/upstream/stable-25-1-2",
-        "remotes/upstream/stable-25-1-2-4-hotfix",
-        "remotes/upstream/stable-25-1-2-7-rc",
-        "remotes/upstream/stable-25-1-3",
-        "remotes/upstream/stable-25-1-4",
-        "remotes/upstream/stable-25-1-4-17-hotfix",
-        "remotes/upstream/stable-25-1-4-7-hotfix",
-        "remotes/upstream/stable-25-1-analytics",
-    ]
-    nebius_branch = "stream-nb-25-1"
-    upstream_stable_branch = "stable-25-2"
-    main_branch = "main"
+        # "remotes/upstream/stable-25-1",
+        # "remotes/upstream/stable-25-1-1",
+        # "remotes/upstream/stable-25-1-1-13-hotfix",
+        # "remotes/upstream/stable-25-1-1-17-hotfix",
+        # "remotes/upstream/stable-25-1-1-18-hotfix",
+        # "remotes/upstream/stable-25-1-1-19",
+        # "remotes/upstream/stable-25-1-1-19-hotfix",
+        # "remotes/upstream/stable-25-1-1-9-hotfix",
+        # "remotes/upstream/stable-25-1-2",
+        # "remotes/upstream/stable-25-1-2-4-hotfix",
+        # "remotes/upstream/stable-25-1-2-7-rc",
+        # "remotes/upstream/stable-25-1-3",
+        # "remotes/upstream/stable-25-1-4",
+        # "remotes/upstream/stable-25-1-4-17-hotfix",
+        # "remotes/upstream/stable-25-1-4-7-hotfix",
+        # "remotes/upstream/stable-25-1-analytics",
+        # "remotes/upstream/stable-25-3",
+        # "remotes/upstream/stable-25-3-1",
+    # ]
 
     diverge_commit = helpers.get_diverge_commit(upstream_stable_branch, nebius_branch)
     print(f"Diverge commit between {nebius_branch} and {upstream_stable_branch}: {diverge_commit}")
@@ -141,7 +149,7 @@ def main():
     for commit in commits_nebius:
         upstream_commit = upstream_commits_set.find_commit(commit)
         if upstream_commit is None:
-            if is_one_of_branches_ancestor(commit.commit_hash, upstream_stable_branches):
+            if helpers.is_ancestor(commit.commit_hash, upstream_stable_branch):
                 continue
             if commit.commit_hash in dont_merge_exceptions:
                 print(f"Skipping commit {commit.commit_hash} - {commit.commit_title} due to exception")
