@@ -137,6 +137,23 @@ class GitLogItem:
         self.commit_normalized_title = title.strip()
         return self.commit_normalized_title != prev_title
 
+    def remove_merge_marker(self):
+        prev_title = self.commit_normalized_title
+        title = self.commit_normalized_title.strip()
+        merge_markers = [
+            " - merge to",
+            ": merge to",
+            " merge to",
+            " - merge",
+            ": merge",
+            " merge",
+        ]
+        for marker in merge_markers:
+            if title.endswith(marker):
+                title = title[len(marker):]
+        self.commit_normalized_title = title.strip()
+        return self.commit_normalized_title != prev_title
+
     def remove_something(self):
         return self.remove_prs_from_title() or \
                self.remove_stable_branch_from_title() or \
@@ -144,7 +161,8 @@ class GitLogItem:
                self.remove_ticket_from_begin() or \
                self.remove_ticket_from_end() or \
                self.remove_github_dots_sign() or \
-               self.remove_brackets()
+               self.remove_brackets() or \
+               self.remove_merge_marker()
 
     def normalize_title(self):
         while self.remove_something():
@@ -173,3 +191,29 @@ def get_log(branch, from_commit=None):
         if i:
             result.append(GitLogItem(i))
     return result
+
+
+def get_changed_files(commit_hash):
+    """
+    Get the list of files changed by a commit.
+    """
+    output = run_git(["diff-tree", "--no-commit-id", "--name-only", "-r", "--root", commit_hash])
+    return [line for line in output.split("\n") if line]
+
+
+def changes_only(commit_hash, exclude_dirs, exclude_files):
+    """
+    Return True if all files changed by the commit are in exclude_files
+    or under one of exclude_dirs, otherwise False.
+    """
+    files = get_changed_files(commit_hash)
+    if not files:
+        return False
+    dirs = [d.rstrip("/") + "/" for d in exclude_dirs]
+    for path in files:
+        if path in exclude_files:
+            continue
+        if any(path.startswith(d) for d in dirs):
+            continue
+        return False
+    return True
