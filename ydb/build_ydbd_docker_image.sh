@@ -18,7 +18,7 @@ mkdir -p ${BUILD_DIR}
 
 cd ${YDB_REPO_PATH}
 
-./ya make --build relwithdebinfo ydb/apps/ydbd
+./ya make --build ${BUILD_TYPE:-relwithdebinfo} ydb/apps/ydbd
 echo "ydbd is built"
 
 # rename link to real file,
@@ -27,6 +27,7 @@ YDBD_BINARY_BUILD_PATH=$(readlink ydb/apps/ydbd/ydbd)
 
 mkdir -p ${BUILD_DIR}/ydb/apps/ydbd
 ln ${YDBD_BINARY_BUILD_PATH} ${BUILD_DIR}/ydb/apps/ydbd/
+strip ${BUILD_DIR}/ydb/apps/ydbd/ydbd
 
 cd ${BUILD_DIR}
 
