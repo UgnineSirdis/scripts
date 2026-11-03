@@ -1,8 +1,11 @@
 #! /usr/bin/env bash
 set -e
 
-cd $HOME/ydb
-PROJECT=ydb
-DIR=$HOME/projects/$PROJECT
-mkdir -p $DIR
-./ya ide vscode-clangd -P $DIR -W $PROJECT --use-arcadia-root --setup-tidy ydb
+INPUT_DIR=${DIR:-ydb}
+REPO_DIR=$HOME/$INPUT_DIR
+
+cd $REPO_DIR
+PROJECT=$INPUT_DIR
+PROJECT_DIR=$HOME/projects/$PROJECT
+mkdir -p $PROJECT_DIR
+./ya ide vscode-clangd -P $PROJECT_DIR -W $PROJECT --use-arcadia-root --setup-tidy ydb
