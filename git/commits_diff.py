@@ -46,19 +46,36 @@ class CommitsSet:
         self.commits = commits
         self.by_title = {}
         self.by_pr = {}
+        self.by_hash = {}
         for commit in commits:
+            self.by_hash[commit.commit_hash] = commit
             self.by_title[commit.commit_normalized_title] = commit
             for pr in commit.prs:
                 self.by_pr[pr] = commit
 
     def find_commit(self, commit):
-        by_title = self.by_title.get(commit.commit_normalized_title)
-        if by_title:
-            return by_title
+        """
+        Search for the commit by many hints, from the most to the least reliable.
+        """
+        # Same commit
+        found = self.by_hash.get(commit.commit_hash)
+        if found:
+            return found
+
+        # The commit was cherry-picked from a commit of this set
+        for source_hash in commit.cherry_picked_from:
+            found = self.by_hash.get(source_hash)
+            if found:
+                return found
+
+        found = self.by_title.get(commit.commit_normalized_title)
+        if found:
+            return found
+
         for pr in commit.prs:
-            by_pr = self.by_pr.get(pr)
-            if by_pr:
-                return by_pr
+            found = self.by_pr.get(pr)
+            if found:
+                return found
         return None
 
 
@@ -141,6 +158,10 @@ def main():
         "f510f6f3e859e70228abbe046b1e2d907562745a",
         "601c23f2db34407f3f5f54abcf7597575c5d3cf4",
         "68d3b5a645c2e39fae74eb380aad79da53fa9ae6",
+        "e4bed748090b71e23e62a7a2b16c74a7bf876cc6",
+        "a1756119a9a6ee5d2eaaef80e044a9f97ddf41f0",
+        "583c4fbf0d5ed32d004b401b6fef260228fbb91f",
+        "bbf6fb4c2c60296de89d8c1e4c70a6e684b668c8",
     }
 
     diverge_commit = helpers.get_diverge_commit(upstream_stable_branch, nebius_branch)
@@ -187,30 +208,43 @@ def main():
 
     commits_to_merge.reverse()
 
-    # List all links
-    print("Commits to merge:")
-    for commit in commits_to_merge:
-        msg = "\n" + commit.commit_title
-        msg += f"\nhttps://github.com/ydb-platform/ydb/commit/{commit.commit_hash}"
-        main_commit = main_commits_set.find_commit(commit)
-        if main_commit:
-            msg += f" main branch commit: https://github.com/ydb-platform/ydb/commit/{main_commit.commit_hash}"
-        else:
-            msg += " no main branch commit!"
-        print(msg)
-
+    # Log cherry-pick runs
     cherry_pick_command_start = "git cherry-pick -X ignore-space-at-eol -x"
     cherry_pick_command = cherry_pick_command_start
-    commits_count_in_command = 10
+    max_commits_per_one_run = 5
+    commits_count_in_command = max_commits_per_one_run
+    step = 1
+    commits_description = ''
+    print(f"\nCherry-pick commands:")
     for commit in commits_to_merge:
         if commits_count_in_command == 0:
-            cherry_pick_command += "\n"
-            cherry_pick_command += cherry_pick_command_start
-            commits_count_in_command = 10
+            print(f"\n{step}. {cherry_pick_command}")
+            print(commits_description)
+            cherry_pick_command = cherry_pick_command_start
+            commits_description = ''
+            commits_count_in_command = max_commits_per_one_run
+            step += 1
+
+        main_commit = main_commits_set.find_commit(commit)
+        if main_commit:
+            commit_to_pick = main_commit
+        else:
+            commit_to_pick = commit
+
         commits_count_in_command -= 1
-        cherry_pick_command += f" {commit.commit_hash}"
-    print(f"\nCherry-pick commands:\n{cherry_pick_command}")
-    print(f"\n\nThere are {len(commits_to_merge)} commits to merge")
+        cherry_pick_command += f" {commit_to_pick.commit_hash}"
+
+        commits_description += f"\n- Branch commit: {commit.commit_title} - {commit.github_link()}"
+        if len(commit.cherry_picked_from) > 0:
+            commits_description += f"\nCherry-picked from: [" + ", ".join(commit.cherry_picked_from) + "]"
+        if main_commit:
+            commits_description += f"\nMain commit: {main_commit.commit_title} - {main_commit.github_link()}"
+        else:
+            commits_description += f"\nMain commit: not found"
+    if commits_description:
+        print(f"\n{step}. {cherry_pick_command}")
+        print(commits_description)
+    print(f"\n\nThere are {len(commits_to_merge)} commits to merge totally")
 
 if __name__ == "__main__":
     main()

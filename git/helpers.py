@@ -54,6 +54,16 @@ def get_diverge_commit(branch1, branch2, branch3=None, branch4=None):
     return run_git(args).strip()
 
 
+BODY_SEPARATOR = "\ncommit-body:\n"
+
+
+def parse_cherry_picked_from(message):
+    """
+    Get hashes from "(cherry picked from commit <hash>)" lines of a commit message.
+    """
+    return re.findall(r'\(cherry picked from commit ([0-9a-f]{7,40})\)', message)
+
+
 class GitLogItem:
     def __init__(self, output):
         if debug_log:
@@ -62,7 +72,10 @@ class GitLogItem:
         if newline_index == -1:
             raise ValueError("Empty log item output")
         self.commit_hash = output[:newline_index]
-        self.commit_title = output[newline_index + 1:].strip()
+        title_and_body = output[newline_index + 1:]
+        title, _, body = title_and_body.partition(BODY_SEPARATOR)
+        self.commit_title = title.strip()
+        self.cherry_picked_from = parse_cherry_picked_from(body)
         self.commit_normalized_title = self.commit_title
         self.normalize_title()
         self.parse_prs()
@@ -175,13 +188,16 @@ class GitLogItem:
         matches = re.findall(r'#(\d+)', full_title)
         self.prs = [int(pr_id) for pr_id in matches]
 
+    def github_link(self):
+        return f"https://github.com/ydb-platform/ydb/commit/{self.commit_hash}"
+
 
 
 def get_log(branch, from_commit=None):
     """
     Get the commit log for a branch, optionally starting from a specific commit.
     """
-    args = ["log", branch, "--no-merges", "--pretty=format:commit-hash:%H%n%s"]
+    args = ["log", branch, "--no-merges", "--pretty=format:commit-hash:%H%n%s%ncommit-body:%n%b"]
     if from_commit:
         args.append(f"{from_commit}..{branch}")
     output = run_git(args).strip()
@@ -217,3 +233,4 @@ def changes_only(commit_hash, exclude_dirs, exclude_files):
             continue
         return False
     return True
+
