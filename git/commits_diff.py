@@ -34,6 +34,15 @@ def test_commit_parsing():
         "Fix ydb read rows timeout after ds tablets restart")
 
 
+def test_truncated_title_search():
+    full = helpers.GitLogItem("1111111\nEXT-1696: move compaction log with some statistic to debug level (#28844)")
+    cut = helpers.GitLogItem("2222222\nEXT-1696: move compaction log with some stat… (#29020)")
+    other = helpers.GitLogItem("3333333\nSomething else (#1)")
+    assert cut.prs == [29020], cut.prs
+    assert CommitsSet([other, full]).find_commit(cut) is full
+    assert CommitsSet([other]).find_commit(cut) is None
+
+
 def make_commits_map(commits):
     commits_map = {}
     for commit in commits:
@@ -72,6 +81,14 @@ class CommitsSet:
         if found:
             return found
 
+        # GitHub cuts too long titles with "…": look for a full title starting with the part before it
+        dots_pos = commit.commit_title.find("…")
+        if dots_pos != -1:
+            prefix = commit.commit_title[:dots_pos]
+            for other in self.commits:
+                if other.commit_title.startswith(prefix):
+                    return other
+
         for pr in commit.prs:
             found = self.by_pr.get(pr)
             if found:
@@ -91,6 +108,7 @@ def is_one_of_branches_ancestor(commit_hash, branches):
 
 def main():
     test_commit_parsing()
+    test_truncated_title_search()
 
     upstream_stable_branches = [
         upstream_stable_branch,

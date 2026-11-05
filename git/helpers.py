@@ -184,8 +184,9 @@ class GitLogItem:
     def parse_prs(self):
         full_title = self.commit_title
         self.prs = []
-        # Find all occurrences of #<id> where <id> is one or more digits
-        matches = re.findall(r'#(\d+)', full_title)
+        # Find all occurrences of #<id> where <id> is one or more digits.
+        # A PR number cut by "…" is incomplete, so skip it.
+        matches = re.findall(r'#(\d+)(?![\d…])', full_title)
         self.prs = [int(pr_id) for pr_id in matches]
 
     def github_link(self):
