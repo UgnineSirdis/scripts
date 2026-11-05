@@ -5,11 +5,12 @@ IMAGE_NAME=$1
 
 if [ -z "$IMAGE_NAME" ]; then
     echo "Usage: $0 <image_name>"
+    echo "Params: REPO_PATH"
     exit 1
 fi
 
 IMAGE_URL=artifactory.nebius.dev/common-cr/ydb/ydb:${IMAGE_NAME}
-YDB_REPO_PATH=~/ydb
+YDB_REPO_PATH=${REPO_PATH:-~/ydb}
 
 BUILD_DIR=~/ydb-docker-build
 
