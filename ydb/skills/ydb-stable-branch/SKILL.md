@@ -1,69 +1,104 @@
 ---
 name: ydb-stable-branch
-description: Resolves conflicts appearing while porting commits from main branch into new Nebius stable branch
+description: Ports commits from main into a Nebius stable branch (stream-nb-YY-N) and resolves cherry-pick conflicts, writing a conflicts description into the commit message
 disable-model-invocation: true
+argument-hint: "[revision ...] (empty = resolve the cherry-pick that is in progress)"
 ---
 
 # YDB Nebius stable branch
 
-The `ydb-stable-branch` skill resolves the conflicts between changes.
+Arguments: `$ARGUMENTS`
 
-## Terminology of YDB branches
+## YDB branches
 
-### main
+- `main`: the upstream development branch. Every change lands here first. Port from `main` whenever you can, not from another stable branch.
+- `stable-YY-N`: an upstream branch cut from `main` and then stabilized. `YY` is the year and `N` is the sequence number, so `stable-24-4` is older than `stable-25-1`.
+- `stream-nb-YY-N`: a Nebius branch. It is made from the last stable tag of `stable-YY-N`, plus Nebius-specific commits ported from `main`. Rarely, it also gets commits that are not in `main` but are still needed.
 
-This is the `main` branch. All main changes are committed to this branch.
-There can be changes that are committed only in stable branches, but mainly just to handle their differences from main.
-It is always preferable to port commits anywhere from main branch, not from anyother stable branch.
+The same change exists as several git commits: the one in `main` (the **main commit**) and the cherry-picked copy in an nb-branch (the **branch commit**). They have the same title and the same purpose, but their diffs can differ slightly. A branch commit usually ends with `(cherry picked from commit <main-sha>)`, which links it to its main commit.
 
-### stable-YY-N
+These branches go to production clusters. Correctness matters more than speed.
 
-It is an upstream branch that was splitted from `main` and later stabilized.
-`YY` here is for year of the branch, `N` is a sequencial order.
-So, for example, `stable-24-4` is older than `stable-25-1`.
+## Modes
 
-### stream-nb-YY-N
+The user has normally already switched to the target `stream-nb-*` branch. Do not switch branches unless asked.
 
-It is a Nebius branch made from last known tag from corresponding upstream branch.
-For example, `stream-nb-25-3` is splitted from the upstream stable branch `stable-25-3`: it's stable tag.
+1. **Port**: `$ARGUMENTS` holds one or more revisions. Process them one by one, in the given order.
+2. **Resolve**: `$ARGUMENTS` is empty and a cherry-pick is in progress (`.git/CHERRY_PICK_HEAD` exists). Resolve that cherry-pick's conflicts.
 
-## How Nebius branches are made
+If neither case applies, ask the user what to do.
 
-Nebius branch `stream-nb-YY-N` consists of some stable base revision from `stable-YY-N` plus Nebius specific commits ported from `main` (or, rarely, commits that are not in `main` for some reasons but are still needed in Nebius branches).
+## Porting a revision
 
-Commits must be ported with a specification of their revision `$REVISION` with the following command:
+1. Check the working tree. If it is dirty, or a cherry-pick, merge or rebase is already in progress, stop and tell the user.
+2. Make sure the revision is the main commit. If it is a branch commit, find its main commit: use the `(cherry picked from commit ...)` trailer, or search `main` for the same title. If you find it, port the main commit and tell the user you did. If you can't find it, or the match is uncertain, ask the user.
+3. Skip the revision if it is already in the target branch. Look for a commit that has the same title, or that carries a `cherry picked from` trailer pointing at the same main commit. Report the skip.
+4. Run exactly:
+   ```sh
+   git cherry-pick -X ignore-space-at-eol -x <revision>
+   ```
+5. If it applies cleanly, the commit is done. Go to the next revision.
+6. If there are conflicts, follow **Resolving conflicts** below. Then **stop**: leave the remaining revisions unprocessed and list them in the report.
 
-```sh
-git cherry-pick -X ignore-space-at-eol -x $REVISION
-```
+## Resolving conflicts
 
-Both commits are logically the same: they deliver the same functionality, have same names etc, but can differ as they are made in slightly different branches.
+The user runs `git cherry-pick --continue` themselves. Never commit, continue, abort, reset, stash or push.
 
-Let's name them correspondingly: the branch commit and the main commit. Formally they are different commits from the git point, but we know that logically they present the same functionality.
+You know git well. Use whatever commands you need. Two habits matter most here:
 
-### Which commits are ported
+- Look at each conflict with its base: `git checkout --conflict=zdiff3 -- <file>`. Without the base you cannot tell which side changed what.
+- Find out *why* the hunk conflicts. Usually the target branch lacks an earlier main commit that touched the same lines. Compare the history of the file in `main` before the ported commit with its history in the target branch.
 
-1. Commits that have been ported to the previous `stream-nb-*` branches, but not yet in the current branch.
+For each conflict, compare these sources:
+- the ported commit's own diff;
+- the target branch version;
+- when the right answer isn't obvious, the current `main` version of the file. For example, use it to decide the order of entries in a list.
 
-    If the commit was in the previous `stream-nb-*` branch, it must be ported again to the next `stream-nb-*` branch too. It is always preferred to port it from the `main` branch as there can be some functionality that appeared in the corresponding `stable-*` branch and is missing in the previous `stable-*`/`stream-nb-*`.
+Change only conflicting hunks. Do not "improve" surrounding code. When a file is fully resolved, `git add` it. When everything is resolved, check that no conflict markers remain.
 
-2. New commits that have been committed to the `main` branch and are needed in `stream-nb-*` branch.
+### Conflict classes
 
-    These are new commits that are ported from `main` as they are needed in Nebius.
+| Class | What to do | In commit message? |
+|---|---|---|
+| **Context-only.** Lines next to the change differ, and both sides' intent is clearly compatible. | Keep both sides. | No |
+| **Ordering.** Both sides add entries to the same list: `ya.make` `SRCS`/`PEERDIR`, enums, switch cases, includes, config lists. | Keep both, in the order `main` uses. | No, unless the order was not obvious |
+| **Adapted.** The code differs between branches (renamed symbol, changed signature, moved code), so the change must be rewritten to apply here. | Apply the same logic to the branch's code. | **Yes**: explain what was adapted and why |
+| **Missing prerequisite.** The change depends on an earlier `main` commit that is not in the branch. | **Stop and ask.** Name the prerequisite commit(s). Do not port them partially by hand. | n/a |
+| **Modify/delete or rename.** The file was deleted or moved on one side. | **Ask.** | n/a |
+| **Wire/format identifiers.** Field numbers in `.proto` files, config field ids, enum values persisted anywhere, schema or migration ids. | Must be **identical to `main`**. If the branch already uses that number for something else, **stop and ask**. | **Yes** |
+| **Generated or canonical data.** Canondata, generated files. | Take the version that matches the code. If unsure, ask. Never hand-merge. | Yes |
+| **Anything else, or any doubt.** | **Ask.** Do not guess. | — |
 
-### Porting commits that have been in previous branches, to the next branches
+### Commit message
 
-This is the description of a process of creation of a new branch. For example, Nebius runs now in the branch `stream-nb-25-2` and wants to migrate to the new branch `stream-nb-25-3`.
-Let's name `stream-nb-25-2` old nb-branch, `stream-nb-25-3` new nb-branch, and the corresponding branches `stable-25-2` as old upstream branch and `stable-25-3` as new upstream branch.
+While a cherry-pick is stopped, git keeps the future commit message in `.git/MERGE_MSG`. `git cherry-pick --continue` uses it as the message. If that file has conflict classes marked "Yes" in the table above, edit it as follows:
 
-1. Find the last stable tag of the new upstream branch.
-2. Make the new nb-branch from this tag.
-3. Find all commits that were made in the old nb-branch and still not present in the new nb-branch.
-4. Port all commits, if they are still relevant for the new nb-branch, from the old nb-branch to the new nb-branch. If commit has a `main` version, it must be ported. If no, branch version.
+- Keep the original title and body unchanged.
+- Add a section **above** the `(cherry picked from commit ...)` line. Do not remove that line.
+  ```
+  Conflicts resolution:
+  - path/to/file.cpp: <what conflicted and how it was resolved, briefly>
+  ```
+- List only the non-obvious conflicts. Context-only conflicts, and ordering conflicts where the order was obvious, stay out.
+- Remove git's auto-generated `# Conflicts:` comment block, if present. Commented lines are stripped anyway, but it is noise.
 
-### Conflicts resolution
+If every conflict was obvious, leave `.git/MERGE_MSG` unchanged.
 
-If we face with the conflicts, we must resolve them.
-If it is not obvious, we must look at the commit in `main`, at the commit in nb-branch, and, sometimes, at current main version of the file (for example to define which of the conflicting parameters must be listed first).
-All the conflicts must be resolved very carefully (as it is stable branch that goes to production clusters). If there are any doubts, don't make any decision, just ask how to resolve.
-Any not obvious conflicts and their way of resolution must be descriped in the commit message.
+## Report to the user
+
+At the end, print:
+- revisions ported cleanly, skipped (with the reason), and not processed yet;
+- for the conflicting revision, one line per file: class, decision, confidence (high/medium/low);
+- open questions, if any;
+- the next step, e.g. "review `git diff --cached`, then run `git cherry-pick --continue`".
+
+## Creating a new nb-branch (background)
+
+When Nebius moves from an old nb-branch (e.g. `stream-nb-25-2`) to a new one (`stream-nb-25-3`):
+
+1. Take the last stable tag of the new upstream branch (`stable-25-3`).
+2. Create the new nb-branch from that tag.
+3. Find the commits that are in the old nb-branch but not in the new one.
+4. Port each one that is still relevant. Use its main commit if there is one; otherwise use the branch commit.
+
+Steps 3–4 produce the list of revisions that is then passed to this skill in **Port** mode.
