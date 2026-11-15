@@ -9,7 +9,7 @@ if [ -z "$IMAGE_NAME" ]; then
 fi
 
 BASE_IMAGE=artifactory.nebius.dev/common-cr/ydb/base:20250416-151221
-YDB_REPO_PATH=~/ydb
+YDB_REPO_PATH=$($SCRIPTS_DIR/repository_root.py)
 
 BUILD_DIR=~/local-ydb-build
 

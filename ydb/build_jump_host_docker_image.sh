@@ -9,13 +9,14 @@ if [ -z "$IMAGE_NAME" ]; then
 fi
 
 IMAGE_URL=artifactory.nebius.dev/common-cr/ydb/ydb-jump-host:${IMAGE_NAME}
+YDB_REPO_PATH=$($SCRIPTS_DIR/repository_root.py)
 
 # ~/docker_builds/ydb-jump-host.dockerfile
 
 rm -rf ~/ydb-jump-host-build
 mkdir -p ~/ydb-jump-host-build/docker/ydb-jump-host
 
-cd ~/ydb
+cd ${YDB_REPO_PATH}
 
 ./ya make --build relwithdebinfo ydb/apps/ydbd ydb/apps/ydb ydb/apps/dstool
 

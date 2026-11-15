@@ -1,6 +1,7 @@
 #! /usr/bin/env bash
 set -e
 
+DIR=$($SCRIPTS_DIR/repository_root.py)
 INPUT_DIR=${DIR:-ydb}
 REPO_DIR=$HOME/$INPUT_DIR
 
