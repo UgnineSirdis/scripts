@@ -4,9 +4,9 @@ PATH="$SCRIPTS_DIR:/usr/libexec/docker/cli-plugins:$HOME/bin:$HOME/bin/go/bin:$H
 export TMPDIR="$HOME/tmp"
 
 # Claude proxy
-export ANTHROPIC_BASE_URL=https://nai-gw.nebius.ts.net/anthropic
+export ANTHROPIC_BASE_URL=https://ai-gateway.nebius.dev/anthropic
 export ANTHROPIC_API_KEY=sk-ant-api03-gateway-placeholder
-export CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY=1
+export CLAUDE_CODE_GATEWAY_HINT_HEADERS=1
 
 cd ~/ydb
 
