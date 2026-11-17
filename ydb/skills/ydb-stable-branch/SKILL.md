@@ -80,6 +80,7 @@ While a cherry-pick is stopped, git keeps the future commit message in `.git/MER
   - path/to/file.cpp: <what conflicted and how it was resolved, briefly>
   ```
 - List only the non-obvious conflicts. Context-only conflicts, and ordering conflicts where the order was obvious, stay out.
+- List only the conflicts you resolved yourself. In **Resolve** mode, some conflicts may already have been resolved before you started, for example by the user. Leave those out: you don't know how or why they were resolved, so the user should describe them.
 - Remove git's auto-generated `# Conflicts:` comment block, if present. Commented lines are stripped anyway, but it is noise.
 
 If every conflict was obvious, leave `.git/MERGE_MSG` unchanged.
